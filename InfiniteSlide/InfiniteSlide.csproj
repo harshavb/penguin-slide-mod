@@ -23,12 +23,12 @@
         </PropertyGroup>
 
         <Exec
-            Command="xcopy /Y /I &quot;$(TargetDir)&quot; &quot;$(GDWeavePath)/mods/$(AssemblyName)&quot;"
+            Command="xcopy /Y /I &quot;$(TargetDir)&quot; &quot;/home/phoenix/.local/share/Steam/steamapps/common/WEBFISHING/GDWeave/mods/$(AssemblyName)&quot;"
             Condition="'$(IsWindows)' == 'true'"
         />
 
         <Exec
-            Command="cp -r $(TargetDir) '$(GDWeavePath)/mods/$(AssemblyName)/'"
+            Command="cp -r $(TargetDir) '/home/phoenix/.local/share/Steam/steamapps/common/WEBFISHING/GDWeave/mods/$(AssemblyName)/'"
             Condition="'$(IsLinux)' == 'true'"
         />
     </Target>
