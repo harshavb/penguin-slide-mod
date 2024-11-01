@@ -1,0 +1,10 @@
+{
+  "Id": "PenguinSlide",
+  "AssemblyPath": "PenguinSlide.dll",
+  "Metadata": {
+    "Name": "Penguin Slide",
+    "Author": "Phoenix :3",
+    "Version": "0.1.0",
+    "Description": "Slide like a penguin :3"
+  }
+}

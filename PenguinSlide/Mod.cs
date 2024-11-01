@@ -1,13 +1,18 @@
 using GDWeave;
 
-namespace InfiniteSlide;
+namespace PenguinSlide;
 
 public class Mod : IMod
 {
+    public Config Config;
+
     public Mod(IModInterface modInterface)
     {
         modInterface.Logger.Information("InfiniteSlide Mod Loaded!");
-        modInterface.RegisterScriptMod(new PlayerPatch());
+
+        this.Config = modInterface.ReadConfig<Config>();
+
+        modInterface.RegisterScriptMod(new PlayerPatch(Config.Speed, Config.TurnSpeed));
     }
 
     public void Dispose() { }
