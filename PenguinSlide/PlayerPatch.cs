@@ -388,7 +388,7 @@ public class PlayerPatch(float speed, float turnSpeed) : IScriptMod
                 yield return new Token(TokenType.ParenthesisOpen);
                 yield return new IdentifierToken("delta");
                 yield return new Token(TokenType.OpMul);
-                yield return new ConstantToken(new RealVariant(turnSpeed));
+                yield return new ConstantToken(new RealVariant(2));
                 yield return new Token(TokenType.ParenthesisClose);
 
                 yield return token;
