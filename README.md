@@ -1,2 +1,2 @@
-# webfishing-mods
-All da webfishing mods i make! :3
+# PenguinSlide Mod
+Slide around like a penguin and race yer frens! :3
