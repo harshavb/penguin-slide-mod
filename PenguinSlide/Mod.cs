@@ -12,7 +12,7 @@ public class Mod : IMod
 
         this.Config = modInterface.ReadConfig<Config>();
 
-        modInterface.RegisterScriptMod(new PlayerPatch(Config.Speed, Config.TurnSpeed));
+        modInterface.RegisterScriptMod(new PlayerPatch(Config.Speed, Config.TurnSpeed, Config.EnableRoll));
     }
 
     public void Dispose() { }

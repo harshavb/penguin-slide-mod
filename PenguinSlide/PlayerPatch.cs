@@ -4,7 +4,7 @@ using GDWeave.Modding;
 
 namespace PenguinSlide;
 
-public class PlayerPatch(float speed, float turnSpeed) : IScriptMod
+public class PlayerPatch(float speed, float turnSpeed, bool enableRoll) : IScriptMod
 {
     public bool ShouldRun(string path) => path == "res://Scenes/Entities/Player/player.gdc";
 
@@ -136,6 +136,21 @@ public class PlayerPatch(float speed, float turnSpeed) : IScriptMod
             t => t is IdentifierToken {Name: "speed_mult"},
             t => t.Type is TokenType.OpAssign,
             t => t is ConstantToken {Value: RealVariant {Value: 0.0}},
+            t => t.Type is TokenType.Newline
+        ]);
+
+        // player_scale_y = lerp(player_scale_y, 1.0, 0.35)
+        var playerScaleWaiter = new MultiTokenWaiter([
+            t => t is IdentifierToken {Name: "player_scale_y"},
+            t => t.Type is TokenType.OpAssign,
+            t => t.Type is TokenType.BuiltInFunc && t.AssociatedData is (uint?) BuiltinFunction.MathLerp,
+            t => t.Type is TokenType.ParenthesisOpen,
+            t => t is IdentifierToken {Name: "player_scale_y"},
+            t => t.Type is TokenType.Comma,
+            t => t is ConstantToken {Value: RealVariant {Value: 1.0}},
+            t => t.Type is TokenType.Comma,
+            t => t is ConstantToken {Value: RealVariant {Value: 0.35}},
+            t => t.Type is TokenType.ParenthesisClose,
             t => t.Type is TokenType.Newline
         ]);
 
@@ -315,7 +330,7 @@ public class PlayerPatch(float speed, float turnSpeed) : IScriptMod
                 yield return new Token(TokenType.Period);
                 yield return new IdentifierToken("UP");
                 yield return new Token(TokenType.Comma);
-                yield return new IdentifierToken("deg2rad");
+                yield return new IdentifierToken("deg2rad"); // WHY DOES THIS WORK HERE
                 yield return new Token(TokenType.ParenthesisOpen);
                 yield return new IdentifierToken("delta");
                 yield return new Token(TokenType.OpMul);
@@ -329,16 +344,46 @@ public class PlayerPatch(float speed, float turnSpeed) : IScriptMod
                 yield return new Token(TokenType.Period);
                 yield return new IdentifierToken("y");
                 yield return new Token(TokenType.OpAssignAdd);
-                yield return new IdentifierToken("deg2rad");
+                yield return new IdentifierToken("deg2rad"); // WHY DOES THIS WORK HERE
                 yield return new Token(TokenType.ParenthesisOpen);
                 yield return new IdentifierToken("delta");
                 yield return new Token(TokenType.OpMul);
                 yield return new ConstantToken(new RealVariant(turnSpeed));
                 yield return new Token(TokenType.ParenthesisClose);
-                yield return new Token(TokenType.Newline, 1);
+                if (enableRoll)
+                {
+                    yield return new Token(TokenType.Newline, 2);
+                }
+                else
+                {
+                    yield return new Token(TokenType.Newline, 1);
+                }
 
-                // if was_diving and Input.is_action_pressed("move_right") and not Input.is_action_pressed("move_left"):
-                yield return new Token(TokenType.CfIf);
+                if (enableRoll)
+                {
+                    // rotation.z = lerp(rotation.z, deg2rad(30), 0.2)
+                    yield return new IdentifierToken("rotation");
+                    yield return new Token(TokenType.Period);
+                    yield return new IdentifierToken("z");
+                    yield return new Token(TokenType.OpAssign);
+                    yield return new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.MathLerpAngle);
+                    yield return new Token(TokenType.ParenthesisOpen);
+                    yield return new IdentifierToken("rotation");
+                    yield return new Token(TokenType.Period);
+                    yield return new IdentifierToken("z");
+                    yield return new Token(TokenType.Comma);
+                    yield return new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.MathDeg2Rad);
+                    yield return new Token(TokenType.ParenthesisOpen);
+                    yield return new ConstantToken(new RealVariant(30.0));
+                    yield return new Token(TokenType.ParenthesisClose);
+                    yield return new Token(TokenType.Comma);
+                    yield return new ConstantToken(new RealVariant(0.2));
+                    yield return new Token(TokenType.ParenthesisClose);
+                    yield return new Token(TokenType.Newline, 1);
+                }
+
+                // elif was_diving and Input.is_action_pressed("move_right") and not Input.is_action_pressed("move_left"):
+                yield return new Token(TokenType.CfElif);
                 yield return new IdentifierToken("was_diving");
                 yield return new Token(TokenType.OpAnd);
                 yield return new IdentifierToken("Input");
@@ -369,7 +414,7 @@ public class PlayerPatch(float speed, float turnSpeed) : IScriptMod
                 yield return new Token(TokenType.Period);
                 yield return new IdentifierToken("UP");
                 yield return new Token(TokenType.Comma);
-                yield return new IdentifierToken("deg2rad");
+                yield return new IdentifierToken("deg2rad"); // WHY DOES THIS WORK HERE
                 yield return new Token(TokenType.ParenthesisOpen);
                 yield return new Token(TokenType.OpSub);
                 yield return new IdentifierToken("delta");
@@ -384,12 +429,59 @@ public class PlayerPatch(float speed, float turnSpeed) : IScriptMod
                 yield return new Token(TokenType.Period);
                 yield return new IdentifierToken("y");
                 yield return new Token(TokenType.OpAssignSub);
-                yield return new IdentifierToken("deg2rad");
+                yield return new IdentifierToken("deg2rad"); // WHY DOES THIS WORK HERE
                 yield return new Token(TokenType.ParenthesisOpen);
                 yield return new IdentifierToken("delta");
                 yield return new Token(TokenType.OpMul);
                 yield return new ConstantToken(new RealVariant(2));
                 yield return new Token(TokenType.ParenthesisClose);
+
+                if (enableRoll)
+                {
+                    yield return new Token(TokenType.Newline, 2);
+
+                    // rotation.z = lerp_angle(rotation.z, deg2rad(-30), 0.2)
+                    yield return new IdentifierToken("rotation");
+                    yield return new Token(TokenType.Period);
+                    yield return new IdentifierToken("z");
+                    yield return new Token(TokenType.OpAssign);
+                    yield return new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.MathLerpAngle);
+                    yield return new Token(TokenType.ParenthesisOpen);
+                    yield return new IdentifierToken("rotation");
+                    yield return new Token(TokenType.Period);
+                    yield return new IdentifierToken("z");
+                    yield return new Token(TokenType.Comma);
+                    yield return new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.MathDeg2Rad);
+                    yield return new Token(TokenType.ParenthesisOpen);
+                    yield return new ConstantToken(new RealVariant(-30.0));
+                    yield return new Token(TokenType.ParenthesisClose);
+                    yield return new Token(TokenType.Comma);
+                    yield return new ConstantToken(new RealVariant(0.2));
+                    yield return new Token(TokenType.ParenthesisClose);
+                    yield return new Token(TokenType.Newline, 1);
+
+                    // else:
+                    yield return new Token(TokenType.CfElse);
+                    yield return new Token(TokenType.Colon);
+                    yield return new Token(TokenType.Newline, 2);
+
+                    // rotation.z = lerp_angle(rotation.z, 0, 0.2)
+                    yield return new IdentifierToken("rotation");
+                    yield return new Token(TokenType.Period);
+                    yield return new IdentifierToken("z");
+                    yield return new Token(TokenType.OpAssign);
+                    yield return new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.MathLerpAngle);
+                    yield return new Token(TokenType.ParenthesisOpen);
+                    yield return new IdentifierToken("rotation");
+                    yield return new Token(TokenType.Period);
+                    yield return new IdentifierToken("z");
+                    yield return new Token(TokenType.Comma);
+                    yield return new ConstantToken(new RealVariant(0));
+                    yield return new Token(TokenType.Comma);
+                    yield return new ConstantToken(new RealVariant(0.2));
+                    yield return new Token(TokenType.ParenthesisClose);
+                    yield return new Token(TokenType.Newline, 1);
+                }
 
                 yield return token;
             }
